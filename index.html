@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Luodong Nice訂房系統</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- 頂部導覽列 -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <span class="brand-icon">🏡</span>
+        <div>
+          <h1>Luodong Nice訂房系統 ✨</h1>
+          <p class="subtitle">零人工接觸・行事曆防呆自動排程・db.xlsx 本地直連資料庫</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="system-time" id="currentTime">載入中...</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container" id="bookingSystemPage">
+    <!-- 頂部即時統計指標 (KPI Cards) -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon car">🚗</div>
+        <div class="stat-info">
+          <div class="stat-value" id="statCarCount">0</div>
+          <div class="stat-label">自駕汽車（需汽車停車位）</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon moto">🛵</div>
+        <div class="stat-info">
+          <div class="stat-value" id="statMotoCount">0</div>
+          <div class="stat-label">自駕機車（需機車停車位）</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon walk">🚶</div>
+        <div class="stat-info">
+          <div class="stat-value" id="statNoCarCount">0</div>
+          <div class="stat-label">大眾運輸 / 無車旅客</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 主要工作區：左側表單 + 右側行事曆 -->
+    <div class="workspace-grid">
+      
+      <!-- 左側：入住登記與排程表單 -->
+      <section class="card form-card">
+        <div class="card-header">
+          <h2>🌷 新增訂房資訊</h2>
+          <span class="badge badge-success">✨ 貼心防呆啟用中</span>
+        </div>
+        <p class="section-desc">請填寫房客資訊，小管家將依中華民國法規檢驗電話與車牌，並自動排入行事曆與 db.xlsx 喔！</p>
+        
+        <form id="bookingForm" class="booking-form" novalidate>
+          <div class="form-group">
+            <label for="guestName">👤 房客姓名 <span class="required">*</span></label>
+            <input type="text" id="guestName" name="guestName" placeholder="例如：王小明" required>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">
+              📞 聯絡電話 <span class="required">*</span>
+              <span class="field-hint-inline">（限 09 開頭共 10 碼純數字）</span>
+            </label>
+            <input type="tel" id="phone" name="phone" placeholder="例如：0912345678" maxlength="10" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="checkIn">🌞 入住日期 <span class="required">*</span></label>
+              <input type="date" id="checkIn" name="checkIn" required>
+              <span class="field-hint">🕒 預設入住：下午 15:00</span>
+            </div>
+            <div class="form-group">
+              <label for="checkOut">🌙 退房日期 <span class="required">*</span></label>
+              <input type="date" id="checkOut" name="checkOut" required>
+              <span class="field-hint">🕚 預設退房：上午 11:00</span>
+            </div>
+          </div>
+
+          <!-- 入住人數：大人與小孩 (最低1人，總和最高10人) -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="adultCount">👨 大人人數 <span class="required">*</span></label>
+              <input type="number" id="adultCount" name="adultCount" value="2" min="1" max="10" required>
+              <span class="field-hint">最低需 1 位大人</span>
+            </div>
+            <div class="form-group">
+              <label for="childCount">🧒 小孩人數 <span class="optional">(0~8人)</span></label>
+              <input type="number" id="childCount" name="childCount" value="0" min="0" max="8" required>
+              <span class="field-hint">未滿 12 歲孩童 (上限 8 人)</span>
+            </div>
+          </div>
+          <div class="guest-total-badge" id="guestTotalBadge">
+            👥 預計入住：共 2 人（2 位大人、0 位小孩）
+          </div>
+
+          <!-- 區分汽車與機車選項 -->
+          <div class="form-group">
+            <label>🚦 交通工具種類 <span class="required">*</span></label>
+            <div class="vehicle-type-selector">
+              <label class="vehicle-radio-label">
+                <input type="radio" name="vehicleType" value="car" checked>
+                <span>🚗 汽車 (汽車位)</span>
+              </label>
+              <label class="vehicle-radio-label">
+                <input type="radio" name="vehicleType" value="motorcycle">
+                <span>🛵 機車 (機車位)</span>
+              </label>
+              <label class="vehicle-radio-label">
+                <input type="radio" name="vehicleType" value="none">
+                <span>🚶 無車 / 搭車</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group" id="plateFormGroup">
+            <label for="licensePlate">
+              🏷️ 車牌號碼 
+              <span class="optional" id="plateOptionalText">(符合台灣法規 / 租車可後補)</span>
+            </label>
+            <div class="plate-input-wrap">
+              <input type="text" id="licensePlate" name="licensePlate" placeholder="例如：ABC-1234" maxlength="10">
+              <span class="plate-badge" id="platePreviewBadge">🚗 汽車格式檢驗中</span>
+            </div>
+            <span class="field-hint" id="plateFormatHint">
+              💡 中華民國法規格式：汽車新式七碼「ABC-1234」、舊式六碼「AB-1234」或「1234-AB」等。
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="notes">💌 特殊備註 / 預計抵達時間</label>
+            <textarea id="notes" name="notes" rows="3" placeholder="例如：約 16:30 抵達、需嬰兒澡盆、停休旅車..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="btnSubmit">
+              <span>🌸 立即驗證並建立排程</span>
+            </button>
+            <button type="reset" class="btn btn-secondary" id="btnReset">清空重填</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 右側：行事曆排程視圖 -->
+      <section class="card calendar-card">
+        <div class="calendar-header-bar">
+          <div class="calendar-nav">
+            <button class="btn btn-sm btn-outline" id="btnPrevMonth">◀ 上個月</button>
+            <button class="btn btn-sm btn-outline" id="btnToday">📍 今天</button>
+            <button class="btn btn-sm btn-outline" id="btnNextMonth">下個月 ▶</button>
+            <h2 id="calendarTitle">2026年 10月</h2>
+          </div>
+          <div class="calendar-legend">
+            <span class="legend-item"><span class="legend-color color-car"></span> 🚗 汽車 (綠)</span>
+            <span class="legend-item"><span class="legend-color color-moto"></span> 🛵 機車 (紫)</span>
+            <span class="legend-item"><span class="legend-color color-no-car"></span> 🚶 無車 (藍)</span>
+            <span class="legend-item"><span class="legend-color color-clean"></span> 🧹 房務清潔 (橘)</span>
+          </div>
+        </div>
+
+        <!-- 月曆網格 (週一在最左邊，週日在最右邊) -->
+        <div class="calendar-container">
+          <div class="calendar-weekdays">
+            <div>週一</div>
+            <div>週二</div>
+            <div>週三</div>
+            <div>週四</div>
+            <div>週五</div>
+            <div class="weekend-header">週六</div>
+            <div class="weekend-header">週日</div>
+          </div>
+          <div class="calendar-grid" id="calendarGrid">
+            <!-- 由 client.js 動態渲染 -->
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 下方區塊：資料庫與訂房清單 (db.xlsx 同步總表) -->
+    <section class="card table-card">
+      <div class="card-header table-header-flex">
+        <div>
+          <h2>📒 訂房排程資料庫 (db.xlsx 即時連動)</h2>
+          <p class="section-desc">所有新增、修改、刪除都會即時寫入根目錄的 db.xlsx，保持資料一致不漏接。</p>
+        </div>
+        <div class="table-actions">
+          <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 搜尋房客姓名、電話、車牌...">
+          </div>
+          <button class="btn btn-sm btn-outline" id="btnRefresh">🔄 重新整理</button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table" id="bookingTable">
+          <thead>
+            <tr>
+              <th>時間戳記 (A)</th>
+              <th>房客姓名 (B)</th>
+              <th>聯絡電話 (C)</th>
+              <th>入住人數</th>
+              <th>入住日期 (D)</th>
+              <th>退房日期 (E)</th>
+              <th>車牌號碼 (F)</th>
+              <th>特殊備註 (G)</th>
+              <th>排程狀態 (H)</th>
+              <th>Event_ID (I)</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- 由 client.js 動態渲染 -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- 預約成功：跳轉顯示 LINE 好友 QR Code 頁面 -->
+  <section class="qrcode-page" id="qrcodeSuccessPage" style="display: none;">
+    <div class="qrcode-card">
+      <div class="qrcode-badge">🎉 預約排程已完成</div>
+      <h2 class="qrcode-title">歡迎入住！請加入 LINE 好友 💕</h2>
+      <p class="qrcode-desc" id="qrGuestSummary">您的訂房與車牌已成功排入行事曆，請掃描下方 QR Code 加入好友以接收貼心入住指引！</p>
+      
+      <div class="qrcode-img-wrapper">
+        <img src="line好友QRcode/軒立.jpg" alt="LINE 好友 QR Code" class="qrcode-img">
+      </div>
+
+      <div class="qrcode-bottom-action">
+        <button type="button" class="btn btn-primary btn-back-system" id="btnBackToSystem">
+          <span>🏡 返回原本「預約系統」</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 彈窗：預訂詳情 Modal -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalDetailTitle">🏡 訂房排程詳細內容</h3>
+        <button class="modal-close" id="btnCloseDetailModal">&times;</button>
+      </div>
+      <div class="modal-body" id="modalDetailContent">
+        <!-- 動態帶入內容 -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnModalEditPlate">✏️ 補登/修改車牌</button>
+        <button class="btn btn-danger" id="btnModalDelete">🗑️ 取消此訂單</button>
+        <button class="btn btn-secondary" id="btnModalClose">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 彈窗：補登/修改車牌 Modal -->
+  <div class="modal-overlay" id="editPlateModal">
+    <div class="modal-box modal-box-sm">
+      <div class="modal-header">
+        <h3>🚗 補登 / 修改車牌與交通工具</h3>
+        <button class="modal-close" id="btnCloseEditModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editEventId">
+        <div class="form-group">
+          <label>房客姓名：<strong id="editGuestName"></strong></label>
+        </div>
+        <div class="form-group">
+          <label>交通工具種類</label>
+          <div class="vehicle-type-selector">
+            <label class="vehicle-radio-label">
+              <input type="radio" name="editVehicleType" value="car" checked>
+              <span>🚗 汽車</span>
+            </label>
+            <label class="vehicle-radio-label">
+              <input type="radio" name="editVehicleType" value="motorcycle">
+              <span>🛵 機車</span>
+            </label>
+            <label class="vehicle-radio-label">
+              <input type="radio" name="editVehicleType" value="none">
+              <span>🚶 無車</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group" id="editPlateGroup">
+          <label for="editLicensePlateInput">車牌號碼</label>
+          <input type="text" id="editLicensePlateInput" placeholder="例如：ABC-1234" maxlength="10">
+          <span class="field-hint" id="editPlateHint">依中華民國法規檢驗格式，儲存後即刻同步更新 db.xlsx！</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btnSavePlate">儲存更新</button>
+        <button class="btn btn-secondary" id="btnCancelEditPlate">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 通知 Toast 浮動訊息 -->
+  <div class="toast" id="toast"></div>
+
+  <script src="client.js"></script>
+</body>
+</html>
