@@ -1,17 +1,17 @@
 {
-  "name": "system",
+  "name": "luodong-nice-booking",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Luodong Nice 訂房系統 - 溫馨排程小管家",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
+  "keywords": ["hotel", "booking", "airbnb", "calendar"],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "express": "^5.3.0",
+    "express": "^4.21.2",
     "xlsx": "^0.18.5"
   }
 }
+
